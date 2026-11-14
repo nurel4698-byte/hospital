@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Врачи{% endblock %}
+{% block content %}
+<h1>Врачи</h1>
+<form class="filters" method="get">
+    <select class="form-control" name="spec">
+        <option value="">Все специализации</option>
+        {% for s in specializations %}
+        <option value="{{ s.id }}" {% if current_spec == s.id|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>
+        {% endfor %}
+    </select>
+    <input class="form-control" name="q" value="{{ q }}" placeholder="Поиск по имени">
+    <button class="btn" type="submit">Найти</button>
+    {% if user.is_staff %}<a class="btn gray" href="{% url 'doctor_add' %}">+ Добавить врача</a>{% endif %}
+</form>
+<div class="grid">
+    {% for d in doctors %}<div class="card">
+    {% if d.photo %}<img class="avatar" src="{{ d.photo.url }}" alt="{{ d.full_name }}">
+    {% else %}<div class="avatar">👨‍⚕️</div>{% endif %}
+    <h3><a href="{% url 'doctor_detail' d.pk %}">{{ d.full_name }}</a></h3>
+    <div class="muted">{{ d.specialization }} · опыт {{ d.experience_years }} лет</div>
+    <div><span class="stars">★</span> {{ d.get_avg_rating }} · записей: {{ d.get_appointment_count }}</div>
+    <p><b>{{ d.price|floatformat:0 }} сом</b></p>
+    <a class="btn small" href="{% url 'appointment_add' %}?doctor={{ d.pk }}">Записаться</a>
+</div>
+
+    {% empty %}<p>Врачи не найдены.</p>{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Клиника «Здоровье»{% endblock %}</title>
+    <style>
+        :root { --main:#0d9488; --dark:#134e4a; --bg:#f0fdfa; --text:#1f2937; --muted:#6b7280; }
+        * { box-sizing:border-box; }
+        body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--text); }
+        a { color:var(--main); text-decoration:none; }
+        .wrap { max-width:1100px; margin:0 auto; padding:0 20px; }
+        header { background:var(--dark); color:#fff; }
+        header .wrap { display:flex; align-items:center; gap:22px; flex-wrap:wrap; min-height:60px; }
+        header a { color:#fff; opacity:.9; }
+        header a:hover { opacity:1; }
+        .logo { font-weight:700; font-size:20px; margin-right:auto; }
+        .inline { display:inline; }
+        .linkbtn { background:none; border:0; color:#fff; opacity:.9; cursor:pointer; font:inherit; padding:0; }
+        main { padding:30px 0 60px; min-height:70vh; }
+        h1 { margin:0 0 20px; }
+        .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:18px; }
+        .card { background:#fff; border-radius:14px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,.06); }
+        .card h3 { margin:6px 0; }
+        .avatar { width:100%; height:150px; border-radius:10px; object-fit:cover; background:#ccfbf1;
+                  display:flex; align-items:center; justify-content:center; font-size:48px; }
+        .muted { color:var(--muted); font-size:14px; }
+        .btn { display:inline-block; background:var(--main); color:#fff !important; border:0; padding:9px 16px;
+               border-radius:8px; cursor:pointer; font:inherit; font-size:15px; }
+        .btn:hover { background:var(--dark); }
+        .btn.gray { background:#6b7280; } .btn.red { background:#dc2626; } .btn.small { padding:5px 10px; font-size:13px; }
+        .form-control { width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:8px; font:inherit; margin-top:4px; }
+        .form-box { max-width:520px; background:#fff; padding:24px; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.06); }
+        .form-box p { margin:0 0 14px; }
+        .errorlist { color:#dc2626; list-style:none; padding:0; margin:4px 0; font-size:14px; }
+        .helptext { color:var(--muted); font-size:12px; display:block; }
+        .msg { padding:12px 16px; border-radius:8px; margin-bottom:12px; background:#d1fae5; }
+        .msg.error { background:#fee2e2; }
+        table { width:100%; border-collapse:collapse; background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,.06); }
+        th,td { padding:12px 14px; text-align:left; border-bottom:1px solid #e5e7eb; vertical-align:top; }
+        th { background:#ccfbf1; }
+        .badge { padding:3px 10px; border-radius:20px; font-size:13px; background:#e5e7eb; }
+        .badge.pending { background:#fef3c7; } .badge.confirmed { background:#dbeafe; }
+        .badge.completed { background:#d1fae5; } .badge.cancelled { background:#fee2e2; }
+        .hero { background:linear-gradient(135deg,var(--main),var(--dark)); color:#fff; padding:40px; border-radius:18px; margin-bottom:30px; }
+        .hero h1 { font-size:34px; } .hero .btn { background:#fff; color:var(--dark) !important; }
+        .filters { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+        .filters .form-control { width:auto; margin:0; }
+        .record { background:#f0fdfa; padding:8px 12px; border-radius:8px; margin-top:6px; font-size:14px; }
+        .stars { color:#f59e0b; }
+        .row { display:flex; gap:24px; flex-wrap:wrap; } .row > div { flex:1; min-width:280px; }
+    </style>
+</head>
+<body>
+<header>
+    <div class="wrap">
+        <a class="logo" href="{% url 'home' %}">🏥 Клиника «Здоровье»</a>
+        <a href="{% url 'doctor_list' %}">Врачи</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'my_appointments' %}">{% if user.is_staff %}Все записи{% else %}Мои записи{% endif %}</a>
+            <a href="{% url 'appointment_add' %}">Записаться</a>
+            {% if user.is_staff %}<a href="{% url 'admin:index' %}">Админка</a>{% endif %}
+            <a href="{% url 'profile' %}">👤 {{ user.username }}</a>
+            <form class="inline" method="post" action="{% url 'logout' %}">{% csrf_token %}
+                <button class="linkbtn" type="submit">Выйти</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}">Войти</a>
+            <a href="{% url 'register' %}">Регистрация</a>
+        {% endif %}
+    </div>
+</header>
+<main>
+    <div class="wrap">
+        {% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+        {% block content %}{% endblock %}
+    </div>
+</main>
+</body>
+</html>

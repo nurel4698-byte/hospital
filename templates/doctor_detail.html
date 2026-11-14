@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}{{ doctor.full_name }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div>
+        <div class="card">
+            {% if doctor.photo %}<img class="avatar" style="height:260px" src="{{ doctor.photo.url }}" alt="">
+            {% else %}<div class="avatar" style="height:260px;font-size:90px">👨‍⚕️</div>{% endif %}
+            <h1 style="margin-top:14px">{{ doctor.full_name }}</h1>
+            <p>{{ doctor.specialization }} · опыт {{ doctor.experience_years }} лет</p>
+            <p><span class="stars">★</span> Рейтинг: <b>{{ doctor.get_avg_rating }}</b> · Записей: <b>{{ doctor.get_appointment_count }}</b></p>
+            <p>Приём: <b>{{ doctor.price|floatformat:0 }} сом</b></p>
+            <a class="btn" href="{% url 'appointment_add' %}?doctor={{ doctor.pk }}">Записаться на приём</a>
+            {% if user.is_staff %}
+                <a class="btn gray" href="{% url 'doctor_edit' doctor.pk %}">Изменить</a>
+                <a class="btn red" href="{% url 'doctor_delete' doctor.pk %}">Удалить</a>
+            {% endif %}
+        </div>
+    </div>
+    <div>
+        <h2>Расписание</h2>
+        <table>
+            <tr><th>День</th><th>Время</th></tr>
+            {% for s in schedules %}
+            <tr><td>{{ s.get_day_of_week_display }}</td><td>{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}</td></tr>
+            {% empty %}<tr><td colspan="2">Расписание не указано</td></tr>{% endfor %}
+        </table>
+
+        <h2 style="margin-top:30px">Отзывы</h2>
+        {% for r in reviews %}
+        <div class="card" style="margin-bottom:10px">
+            <span class="stars">{{ r.get_stars_display }}</span> <b>{{ r.patient }}</b>
+            <span class="muted">{{ r.created_date|date:"d.m.Y" }}</span>
+            <div>{{ r.comment }}</div>
+        </div>
+        {% empty %}<p class="muted">Отзывов пока нет.</p>{% endfor %}
+
+        {% if user.is_authenticated %}
+        <div class="form-box" style="margin-top:16px">
+            <h3 style="margin-top:0">Оставить отзыв</h3>
+            <form method="post" action="{% url 'add_review' doctor.pk %}">{% csrf_token %}
+                {{ review_form.as_p }}
+                <button class="btn" type="submit">Отправить</button>
+            </form>
+            <p class="muted">Отзыв доступен после завершённого приёма у этого врача.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

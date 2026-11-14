@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Записи{% endblock %}
+{% block content %}
+<h1>{% if user.is_staff %}Все записи{% else %}Мои записи{% endif %}</h1>
+<p><a class="btn" href="{% url 'appointment_add' %}">+ Новая запись</a></p>
+<table>
+    <tr>
+        <th>Дата и время</th>{% if user.is_staff %}<th>Пациент</th>{% endif %}
+        <th>Врач</th><th>Жалоба / результат приёма</th><th>Статус</th><th>Действия</th>
+    </tr>
+    {% for a in appointments %}
+    <tr>
+        <td>{{ a.date_time|date:"d.m.Y H:i" }}</td>
+        {% if user.is_staff %}<td>{{ a.patient }}</td>{% endif %}
+        <td><a href="{% url 'doctor_detail' a.doctor.pk %}">{{ a.doctor.full_name }}</a><br>
+            <span class="muted">{{ a.doctor.specialization }}</span></td>
+        <td>
+            {{ a.complaint }}
+            {% if a.medical_record %}
+            <div class="record">
+                <b>Диагноз:</b> {{ a.medical_record.diagnosis }}<br>
+                <b>Назначения:</b> {{ a.medical_record.prescription }}
+            </div>
+            {% endif %}
+        </td>
+        <td><span class="badge {{ a.status }}">{{ a.get_status_display }}</span></td>
+        <td>
+            {% if a.status == 'pending' and a.patient == user %}
+                <a class="btn small gray" href="{% url 'appointment_edit' a.pk %}">Изменить</a>
+            {% endif %}
+            {% if a.status == 'pending' or a.status == 'confirmed' %}
+                <form class="inline" method="post" action="{% url 'appointment_status' a.pk 'cancelled' %}">{% csrf_token %}
+                    <button class="btn small red" type="submit">Отменить</button></form>
+            {% endif %}
+            {% if user.is_staff %}
+                {% if a.status == 'pending' %}
+                <form class="inline" method="post" action="{% url 'appointment_status' a.pk 'confirmed' %}">{% csrf_token %}
+                    <button class="btn small" type="submit">Подтвердить</button></form>
+                {% endif %}
+                {% if a.status == 'confirmed' %}
+                <form class="inline" method="post" action="{% url 'appointment_status' a.pk 'completed' %}">{% csrf_token %}
+                    <button class="btn small" type="submit">Завершить</button></form>
+                {% endif %}
+            {% endif %}
+            {% if a.status != 'completed' %}
+                <a class="btn small gray" href="{% url 'appointment_delete' a.pk %}">Удалить</a>
+            {% endif %}
+        </td>
+    </tr>
+    {% empty %}<tr><td colspan="6">Записей пока нет.</td></tr>{% endfor %}
+</table>
+{% endblock %}

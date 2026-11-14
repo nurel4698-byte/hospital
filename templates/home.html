@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hero">
+    <h1>Забота о вашем здоровье</h1>
+    <p>Выберите врача, посмотрите расписание и запишитесь на приём онлайн.</p>
+    <a class="btn" href="{% url 'doctor_list' %}">Найти врача</a>
+</div>
+
+{% if not specializations %}<div class="msg">База пуста. <a href="{% url 'seed' %}"><b>Загрузить тестовые данные</b></a></div>{% endif %}
+<h2>Специализации</h2>
+<div class="grid">
+    {% for s in specializations %}
+    <a class="card" href="{% url 'doctor_list' %}?spec={{ s.id }}">
+        {% if s.image %}<img class="avatar" src="{{ s.image.url }}" alt="{{ s.name }}">
+        {% else %}<div class="avatar">🩺</div>{% endif %}
+        <h3>{{ s.name }}</h3>
+        <div class="muted">{{ s.description }}</div>
+        <div class="muted">Врачей: {{ s.doctors_count }}</div>
+    </a>
+    {% endfor %}
+</div>
+
+<h2 style="margin-top:36px">Наши врачи</h2>
+<div class="grid">
+    {% for d in doctors %}<div class="card">
+    {% if d.photo %}<img class="avatar" src="{{ d.photo.url }}" alt="{{ d.full_name }}">
+    {% else %}<div class="avatar">👨‍⚕️</div>{% endif %}
+    <h3><a href="{% url 'doctor_detail' d.pk %}">{{ d.full_name }}</a></h3>
+    <div class="muted">{{ d.specialization }} · опыт {{ d.experience_years }} лет</div>
+    <div><span class="stars">★</span> {{ d.get_avg_rating }} · записей: {{ d.get_appointment_count }}</div>
+    <p><b>{{ d.price|floatformat:0 }} сом</b></p>
+    <a class="btn small" href="{% url 'appointment_add' %}?doctor={{ d.pk }}">Записаться</a>
+</div>
+{% endfor %}
+</div>
+{% endblock %}
